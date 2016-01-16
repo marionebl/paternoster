@@ -28,6 +28,7 @@ l-en-git() {
 
 L_CURRENT_BG='NONE'
 L_SEGMENT_SEPARATOR='⮀'
+L_SEGMENT_SEPARATOR_REVERSE='\uE0b8'
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
@@ -36,9 +37,14 @@ prompt_segment() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+	[[ -n $4 ]] && reverse=true || reverse=false
   if [[ $L_CURRENT_BG != 'NONE' && $1 != $L_CURRENT_BG ]]; then
     if [[ $MOBILE != true ]]; then
-      echo -n " %{$bg%F{$L_CURRENT_BG}%}$L_SEGMENT_SEPARATOR%{$fg%} "
+			if [[ $reverse != true ]]; then
+				echo -n " %{$bg%F{$L_CURRENT_BG}%}$L_SEGMENT_SEPARATOR%{$fg%} "
+			else
+				echo -n " %{$bg%F{$_CURRENT_BG}%}$L_SEGMENT_SEPARATOR_REVERSE%{$fg%} "
+			fi
     else
       echo -n " %{$bg%F{$L_CURRENT_BG}%}%{$fg%} "
     fi
@@ -182,9 +188,9 @@ prompt_status() {
 prompt_date() {
   if [[ $MOBILE != true ]]; then
     if [[ $(expr "$(($SCREEN_WIDTH - ${#L_BUILT_PROMPT})) >= 18") -eq 1 ]]; then
-      prompt_segment black 8 "%D %*"
+      prompt_segment black default "%*"
     else
-      prompt_segment black 8 ""
+      prompt_segment black default ""
     fi
   fi
 }
@@ -202,111 +208,31 @@ build_prompt() {
   GIT_HAS_COMMIT=false
 
   prompt_prebuld
-
-  prompt_context
-  prompt_status
-  prompt_dir
-
-  prompt_git
-
   prompt_date
+  prompt_dir
+  prompt_git
   prompt_end
 }
-
-PROMPT='
-%{%f%b%k%}$(build_prompt)
- %(!.#.$) '
 
 ### The Right Prompt
 
 function rprompt_git_status() {
-  if [[ $L_DISPLAY_GIT_STATUS = true ]]; then
-    if [[ $GIT_REPO = true ]]; then
-      dirty=$(parse_git_dirty)
-      LAST_COMMIT_TIME=$(git log -1 --pretty=format:'%ar' 2>/dev/null | sed 's/second/sec/g' | sed 's/minute/min/g' | sed 's/hour/hr/g')
-      DIFF_SS=$(git diff --shortstat)
-      if [[ -n $dirty ]]; then
-        if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-        L_BUILT_RPROMPT='$L_BUILT_RPROMPTGit:'
-        echo -n "Git:$(git config --get user.name):"
-        FILECHANGE=$(git diff --shortstat | grep -o -e "[^ ]* file" | sed "s/ file//g")
-        L_BUILT_RPROMPT="$L_BUILT_RPROMPT$FILECHANGE"
-        echo -n "$FILECHANGE"
-        INSERTIONS=$(echo $DIFF_SS | grep -o -e "[^ ]* insertion" | sed "s/ insertion//g")
-        DELETIONS=$(echo $DIFF_SS | grep -o -e "[^ ]* deletion" | sed "s/ deletion//g")
-        [[ ! -n $INSERTIONS ]] && INSERTIONS='0'
-        [[ ! -n $DELETIONS ]] && DELETIONS='0'
-        INSERTIONS_ORG="$INSERTIONS"
-        DELETIONS_ORG="$DELETIONS"
-        DIFFS=10
-        [[ $MOBILE = true ]] && DIFFS=5
-        if [[ $(($INSERTIONS + $DELETIONS > $DIFFS)) -eq 1 ]]; then
-          B=$(($INSERTIONS + $DELETIONS))
-          INSERTIONS=$(($INSERTIONS * $DIFFS / $B))
-          DELETIONS=$(($DELETIONS * $DIFFS / $B))
-        fi
-        [[ $(($INSERTIONS < 1)) -eq 1 && $(($INSERTIONS_ORG > 0)) -eq 1 ]] && INSERTIONS='1'
-        [[ $(($DELETIONS < 1)) -eq 1 && $(($DELETIONS_ORG > 0)) -eq 1 ]] && DELETIONS='1'
-        if [[ $(($INSERTIONS > 0)) -eq 1 ]]; then
-          for i in {1..$INSERTIONS}; do
-              L_BUILT_RPROMPT="$L_BUILT_RPROMPT▣"
-              echo -n "%{%F{green}%}▣%{%f%}"
-          done
-        fi
-        if [[ $(($DELETIONS > 0)) -eq 1 ]]; then
-          for i in {1..$DELETIONS}; do
-              L_BUILT_RPROMPT="$L_BUILT_RPROMPT▣"
-              echo -n "%{%F{red}%}▣%{%f%}"
-          done
-        fi
-        LAST_COMMIT_TIME=$(echo $LAST_COMMIT_TIME | sed 's/ ../&@/' | sed 's/@.*//' | sed 's/ //')
-        [[ ! $MOBILE = true ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT%{$FG[008]%} ($LAST_COMMIT_TIME)"
-        [[ ! $MOBILE = true ]] &&echo -n "%{$FG[008]%} ($LAST_COMMIT_TIME)"
-      elif [[ $GIT_HAS_COMMIT = true ]]; then
-        COMMIT_NAME=$(git rev-parse HEAD | cut -c1-7)
-        if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-        L_BUILT_RPROMPT="$L_BUILT_RPROMPTGit:$(git config --get user.name)@[$COMMIT_NAME] $LAST_COMMIT_TIME"
-        echo -n "Git:$(git config --get user.name)@[$COMMIT_NAME] $LAST_COMMIT_TIME"
-      else
-        if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-        L_BUILT_RPROMPT="$L_BUILT_RPROMPTGit:$(git config --get user.name)@init"
-        echo -n "Git:$(git config --get user.name)@init"
-      fi
-    fi
-  else
-    if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-    L_BUILT_RPROMPT="$L_BUILT_RPROMPTGit:(status-disabled)"
-    echo -n "Git:(status-disabled)"
+  if [[ $GIT_REPO = true ]]; then
+    echo -n "%{$fg[grey]%} %{$reset_color%}$(git config --get user.email)  "
   fi
 }
 
 function rprompt_rvm_status() {
-  if $(type rvm_prompt_info >/dev/null 2>&1); then
-    RVM_INFO=$(rvm_prompt_info | sed "s/(ruby-//g" | sed "s/)//g")
-    if [[ $RVM_INFO != $DEFAULT_RVM ]]; then
-      if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-      L_BUILT_RPROMPT="$L_BUILT_RPROMPT⬥"
-      echo -n "⬥"
-      if [[ $(( $SCREEN_WIDTH > 60 )) = 1 ]]; then
-        L_BUILT_RPROMPT=" $RVM_INFO"
-        echo -n " $RVM_INFO"
-      fi
-    fi
+  if $(type rvm >/dev/null 2>&1); then
+		RVM_INFO=$(rvm current)
+		echo -n "%{$fg[red]%} %{$reset_color%}$RVM_INFO  "
   fi
 }
 
 function rprompt_nvm_status() {
-  if $(type nvm_prompt_info >/dev/null 2>&1); then
-    NVM_INFO=$(nvm_prompt_info)
-    if [[ $NVM_INFO != $DEFAULT_NVM ]]; then
-      if [[ -n $L_BUILT_RPROMPT ]] && L_BUILT_RPROMPT="$L_BUILT_RPROMPT " && echo -n ' '
-      L_BUILT_RPROMPT="$L_BUILT_RPROMPT⬡"
-      echo -n "⬡"
-      if [[ $(( $SCREEN_WIDTH > 60 )) = 1 ]]; then
-        L_BUILT_RPROMPT=" $NVM_INFO"
-        echo -n " $NVM_INFO"
-      fi
-    fi
+  if $(type nvm >/dev/null 2>&1); then
+    NVM_INFO=$(nvm current)
+		echo -n "%{$fg[green]%} %{$reset_color%}$NVM_INFO  "
   fi
 }
 
@@ -325,5 +251,10 @@ build_rprompt() {
   rprompt_nvm_status
   rprompt_git_status
 }
+
+PROMPT='
+%{%f%b%k%}$(build_prompt) %(!.#) '
+
+
 
 RPROMPT='%{$FG[008]%}$(build_rprompt)%{$reset_color%}'
