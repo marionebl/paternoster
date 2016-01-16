@@ -16,4 +16,4 @@ antigen theme marionebl/paternoster paternoster
 * `jenv` support
 
 ## Screenshot
-![paternoster screenshot](./paternoster-screenshot.jpg)
+![paternoster screenshot](https://raw.githubusercontent.com/marionebl/paternoster/master/paternoster-screenhost.jpg)
