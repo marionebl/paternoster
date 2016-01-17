@@ -7,9 +7,9 @@ antigen theme marionebl/paternoster paternoster
 ```
 ## Features
 * Minimal left prompt
-* `nvm` version on right prompt
-* `rvm` version on right prompt
-* `jenv` support
+* `nvm` version if `package.json` is in cwd
+* `rvm` version if `Gemfile` is in cwd
+* `jenv` version if `pom.xml` is in cwd
 * `git config user.email` on right prompt
 * uses `vim-dev-icons` font
 
