@@ -9,11 +9,9 @@ antigen theme marionebl/paternoster paternoster
 * Minimal left prompt
 * `nvm` version on right prompt
 * `rvm` version on right prompt
+* `jenv` support
 * `git config user.email` on right prompt
 * uses `vim-dev-icons` font
-
-## Roadmap
-* `jenv` support
 
 ## Screenshot
 ![paternoster screenshot](https://raw.githubusercontent.com/marionebl/paternoster/master/paternoster-screenhost.jpg)

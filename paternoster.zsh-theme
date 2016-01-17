@@ -222,6 +222,13 @@ function rprompt_git_status() {
   fi
 }
 
+function rprompt_jenv_status() {
+	if $(type jenv >/dev/null 2>&1); then
+		JENV_INFO=$(jenv version-name);
+		echo -n "%{$fg[blue]%} %{$reset_color%}$JENV_INFO  "
+	fi
+}
+
 function rprompt_rvm_status() {
   if $(type rvm >/dev/null 2>&1); then
 		RVM_INFO=$(rvm current)
@@ -247,6 +254,7 @@ build_rprompt() {
 
   prompt_prebuld
 
+	rprompt_jenv_status
   rprompt_rvm_status
   rprompt_nvm_status
   rprompt_git_status
