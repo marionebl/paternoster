@@ -263,9 +263,35 @@ build_rprompt() {
 	rprompt_git_status
 }
 
-PROMPT='
-%{%f%b%k%}$(build_prompt) %(!.#) '
+setopt prompt_subst
 
+PROMPT=''
+RPROMPT=''
 
+ASYNC_PROC=0
+function precmd() {
+	function async() {
+		echo '%{$FG[008]%}$(build_rprompt)%{$reset_color%}' > "/tmp/.paternoster_rprompt_tmp"
+		echo '
+%{%f%b%k%}$(build_prompt) %(!.#) ' > "/tmp/.paternoster_lprompt_tmp"
+		kill -s USR1 $$
+	}
 
-RPROMPT='%{$FG[008]%}$(build_rprompt)%{$reset_color%}'
+	if [[ "${ASYNC_PROC}" != 0 ]]; then
+		kill -s HUP $ASYNC_PROC >/dev/null 2>&1 || :
+	fi
+
+	async &!
+	ASYNC_PROC=$!
+	echo $ASYNC_PROC
+}
+
+function TRAPUSR1() {
+	PROMPT="$(cat /tmp/.paternoster_lprompt_tmp)"
+	RPROMPT="$(cat /tmp/.paternoster_rprompt_tmp)"
+	echo "" > "/tmp/.paternoster_lprompt_tmp"
+	echo "" > "/tmp/.paternoster_rprompt_tmp"
+
+	ASYNC_PROC=0
+	zle && zle reset-prompt
+}
