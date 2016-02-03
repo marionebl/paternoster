@@ -32,7 +32,21 @@ function rprompt_nvm_status() {
 	fi
 }
 
+function rprompt_docker_machine_status() {
+	if $(type docker-machine >/dev/null 2>&1); then
+		if [[ -f 'Dockerfile' || -f '.dockerignore' ]]; then
+			DOCKER_MACHINE_INFO=$(docker-machine status default)
+			DOCKER_MACHINE_COLOR=darkgray
+			if [ $DOCKER_MACHINE_INFO = 'Running' ]; then
+				DOCKER_MACHINE_COLOR=gray
+			fi
+			echo -n "%{$fg[$DOCKER_MACHINE_COLOR]%} %{$reset_color%}$DOCKER_MACHINE_INFO  "
+		fi
+	fi
+}
+
 build_rprompt() {
+	rprompt_docker_machine_status
 	rprompt_jenv_status
 	rprompt_rvm_status
 	rprompt_nvm_status
