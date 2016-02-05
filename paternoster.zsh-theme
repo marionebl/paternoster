@@ -52,7 +52,39 @@ function rprompt_docker_machine_status() {
 	fi
 }
 
+function rprompt_jenkins_status() {
+	if [[ (-f './binary/jenkins.js' || -f './node_modules/.bin/jenkins') ]]; then
+		if [ -f './binary/jenkins.js' ]; then
+			EXEC='./binary/jenkins.js';
+		elif [ -f './node_modules/.bin/jenkins' ]; then
+			EXEC='./node_modules/.bin/jenkins';
+		fi
+
+		JENKINS_STATUS=$(node $EXEC status)
+
+		if [[ $JENKINS_STATUS = 'disconnected' ]] then;
+			SIGN='⚠ ';
+			TEXT='Disconnected'
+			COLOR='yellow';
+		elif [[ $JENKINS_STATUS = 'passing' ]] then;
+			SIGN='✓ ';
+			TEXT='Passing';
+			COLOR='green';
+		elif [[ $JENKINS_STATUS = 'failing' ]] then;
+			SIGN='✖ ';
+			TEXT='Failing';
+			COLOR='red';
+		else
+			SIGN='? ';
+			TEXT='Unknown';
+			COLOR='grey';
+		fi
+		echo -n "%{$fg[$COLOR]%}$SIGN%{$reset_color%}$TEXT  "
+	fi
+}
+
 build_rprompt() {
+	rprompt_jenkins_status
 	rprompt_docker_machine_status
 	rprompt_jenv_status
 	rprompt_rvm_status
