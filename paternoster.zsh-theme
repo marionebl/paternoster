@@ -1,4 +1,3 @@
-### The Right Prompt
 function rprompt_git_status() {
 	if [[ $GIT_REPO = true ]]; then
 		echo -n "%{$fg[grey]%} %{$reset_color%}$(git config --get user.email)  "
@@ -47,7 +46,7 @@ function rprompt_docker_machine_status() {
 				DOCKER_MACHINE_COLOR=red
 				DOCKER_MACHINE_INFO=''
 			fi
-			echo -n "%{$fg[$DOCKER_MACHINE_COLOR]%} %{$reset_color%}$DOCKER_MACHINE_INFO  "
+			echo -n "%{$fg[$DOCKER_MACHINE_COLOR]%} %{$reset_color%}$DOCKER_MACHINE_INFO  "
 		fi
 	fi
 }
@@ -61,21 +60,18 @@ function rprompt_jenkins_status() {
 		fi
 
 		JENKINS_STATUS=$(node $EXEC status)
+		SIGN=' ';
 
 		if [[ $JENKINS_STATUS = 'disconnected' ]] then;
-			SIGN='⚠ ';
 			TEXT='Disconnected'
 			COLOR='yellow';
 		elif [[ $JENKINS_STATUS = 'passing' ]] then;
-			SIGN='✓ ';
 			TEXT='Passing';
 			COLOR='green';
 		elif [[ $JENKINS_STATUS = 'failing' ]] then;
-			SIGN='✖ ';
 			TEXT='Failing';
 			COLOR='red';
 		else
-			SIGN='? ';
 			TEXT='Unknown';
 			COLOR='grey';
 		fi
